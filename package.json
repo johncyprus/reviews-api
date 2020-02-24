@@ -1,0 +1,30 @@
+{
+  "name": "sdc-ratings-and-reviews",
+  "version": "1.0.0",
+  "description": "Hack Reactor System Design Capstone. Optimize and reorganize an existing database to accomodate a client-side application's legacy codebase. Design the system architecture of the legacy code's reviews and ratings section.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "nodemon server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hrnyc27-dettifoss/sdc-ratings-and-reviews.git"
+  },
+  "keywords": [
+    "postgresql"
+  ],
+  "author": "John Lee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hrnyc27-dettifoss/sdc-ratings-and-reviews/issues"
+  },
+  "homepage": "https://github.com/hrnyc27-dettifoss/sdc-ratings-and-reviews#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "pg": "^7.18.2",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.21.5"
+  }
+}
