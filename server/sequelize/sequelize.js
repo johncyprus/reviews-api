@@ -18,7 +18,8 @@ const Reviews = sequelize.define('reviews', {
     id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        as: 'review_id'
     },
     rating: {
         type: Sequelize.INTEGER,
@@ -62,10 +63,15 @@ const Reviews = sequelize.define('reviews', {
     },
     recommend: {
       type: Sequelize.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      get() {
+        const rawValue = this.getDataValue('recommend');
+        return rawValue ? 1 : 0;
+      }
     }
 }, {
-    timestamps: false
+    timestamps: false,
+    underscored: true
 });
 
 const ReviewsPhotos = sequelize.define('reviews_photos', {
@@ -80,12 +86,15 @@ const ReviewsPhotos = sequelize.define('reviews_photos', {
     },
     review_id: {
       type: Sequelize.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: Reviews,
+        key: 'id'
+      }
     }
 }, {
-  define: {
-    timestamps: false
-  }
+    timestamps: false,
+    underscored: true
 });
 
 const Products = sequelize.define('products', {
@@ -115,9 +124,8 @@ const Products = sequelize.define('products', {
     allowNull: false
   }
 }, {
-define: {
-  timestamps: false
-}
+  timestamps: false,
+  underscored: true
 });
 
 const Characteristics = sequelize.define('characteristics', {
@@ -135,9 +143,7 @@ const Characteristics = sequelize.define('characteristics', {
     allowNull: false
   }
 }, {
-define: {
   timestamps: false
-}
 });
 
 const CharacteristicReview = sequelize.define('characteristic_review', {
@@ -159,14 +165,24 @@ const CharacteristicReview = sequelize.define('characteristic_review', {
     allowNull: false
   }
 }, {
-define: {
-  timestamps: false
-}
+  timestamps: false,
+  freezeTableName: true,
+  tableName: 'characteristic_review'
+});
+
+Reviews.hasMany(ReviewsPhotos, {
+  foreignKey: 'review_id',
+  as: 'photos'
+});
+
+Products.hasMany(Reviews, {
+  foreignKey: 'product_id'
 });
 
 sequelize.sync({force: false});
 
 module.exports = {
+  sequelize: sequelize,
   Reviews: Reviews,
   ReviewsPhotos: ReviewsPhotos,
   Products: Products,

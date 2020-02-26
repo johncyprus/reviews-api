@@ -11,6 +11,10 @@ router.get('/reviews/:product_id/list', (req, res) => {
     // console.log('What is the Req Query?', req.query);
     // console.log('What is the other url?:', req.url);
     controller.getReviewList(req, res);
+});
+
+router.get('/reviews/:product_id/meta', (req, res) => {
+    controller.getReviewMeta(req, res);
 })
 
 

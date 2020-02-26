@@ -1,4 +1,5 @@
 const {
+    sequelize,
     Reviews, 
     ReviewsPhotos, 
     Products, 
@@ -8,24 +9,94 @@ const {
 
 // Should interact with Postgres and pass the data back to controller.
 module.exports = {
-    fetchReviewList: (req, res) => {
-        let url = req.url;
+    fetchReviewList: (req) => {
+        // let url = req.url;
         let product_id = req.params.product_id;
         let page = req.query.page;
         let count = Number(req.query.count);
-        let sort = req.query.sort; 
+        // let sort = req.query.sort; 
 
-        Reviews.findAll({ limit: count })
-            .then(response => {
-                console.log('testing query:', JSON.parse(JSON.stringify(response)));
+        let reply = {
+            product: product_id,
+            page: page - 1,
+            count: count
+        };
+
+        return Reviews.findAll({
+            where: {
+                product_id: product_id
+            },
+            attributes: [
+                ['id', 'review_id'],
+                'rating',
+                'summary',
+                'body',
+                'reviewer_name',
+                'helpfulness',
+                'date',
+                'product_id',
+                'response',
+                'recommend'
+            ], 
+            limit: count,
+            order: sequelize.col('id'),
+            include: [
+                {
+                    model: ReviewsPhotos,
+                    as: 'photos'
+                }
+            ] 
+        })
+        .then(response => {
+            let results = JSON.parse(JSON.stringify(response));
+            reply["results"] = results;
+            return reply;
+        });
+
+    },
+    fetchReviewMeta: (req) => {
+        // let url = req.url;
+        let product_id = req.params.product_id;
+        // let ratingsQuery = `SELECT rating, COUNT(*) FROM reviews WHERE product_id = ${product_id} GROUP BY rating `
+        let ratingsQuery = `SELECT rating, COUNT(*) FROM reviews WHERE id IN (SELECT id FROM reviews WHERE reviews.product_id = ${product_id}) GROUP BY rating `
+        let ratingsPromise = sequelize.query(ratingsQuery)
+            .then(([results]) => {
+                if (results.length === 0) {
+                    return {};
+                }
+                let ratings = {};
+                results.forEach((item) => {
+                    ratings[item.rating] = Number(item.count);
+                });
+                return ratings;
+            });
+        
+        let recommendedQuery = `SELECT recommend, COUNT(*) FROM reviews WHERE id IN (SELECT id FROM reviews WHERE reviews.product_id = ${product_id}) GROUP BY recommend ORDER BY recommend ASC`
+        let recommendedPromise = sequelize.query(recommendedQuery)
+            .then(([results]) => {
+                if (results.length === 0) {
+                    return {0: 0, 1: 0};
+                }
+                let recommended = {
+                    0: Number(results[0].count),
+                    1: Number(results[1].count)
+                };
+                return recommended;
+            });
+        
+        let characteristicsQuery = `SELECT c1.id, c1.name, avg(cr."value") FROM characteristics c1 INNER JOIN characteristic_review cr ON (c1.id = cr.characteristic_id) WHERE c1.product_id = ${product_id} GROUP BY c1.id`
+        let characteristicsPromise = sequelize.query(characteristicsQuery)
+            .then(([results]) => {
+                let characteristics = {};
+                results.forEach(item => {
+                    characteristics[item.name] = {
+                        id: item.id,
+                        value: Number(item.avg).toFixed(4)
+                    };
+                });
+                return characteristics;
             })
-
-        console.log('test url:', url);
-        console.log('test id:', product_id);
-        console.log('test page:', page);
-        console.log('test count:', count);
-        console.log('test sort:', sort);
-
-        res.send('Testing Router Get Reviews');
+        
+        return Promise.all([ratingsPromise, recommendedPromise, characteristicsPromise]);
     }
 }
