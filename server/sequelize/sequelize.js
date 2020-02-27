@@ -10,6 +10,9 @@ sequelize.authenticate()
   .then(() => {
     console.log('DB connection has been established successfully.');
   })
+  .then(() => {
+    sequelize.sync();
+  })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
   });
@@ -17,49 +20,43 @@ sequelize.authenticate()
 const Reviews = sequelize.define('reviews', {
     id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         primaryKey: true,
-        as: 'review_id'
-    },
-    rating: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-    },
-    summary: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    body: {
-      type: Sequelize.STRING(1000),
-      allowNull: false
-    },
-    reviewer_name: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    helpfulness: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-    },
-    date: {
-      type: Sequelize.DATEONLY,
-      allowNull: false
+        as: 'review_id',
+        autoIncrement: true
     },
     product_id: {
       type: Sequelize.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: "products",
+        key: "id"
+      }
     },
-    response: {
-      type: Sequelize.STRING,
-      allowNull: true
+    rating: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 1,
+          max: 5
+        }
     },
-    reported: {
-      type: Sequelize.BOOLEAN,
-      allowNull: false
+    date: {
+      type: Sequelize.DATEONLY,
+      defaultValue: Date.now
     },
-    reviewer_email: {
-      type: Sequelize.STRING,
-      allowNull: false
+    summary: {
+      type: Sequelize.STRING(60),
+      allowNull: false,
+      validate: {
+        maxLength: 60
+      }
+    },
+    body: {
+      type: Sequelize.STRING(1000),
+      allowNull: false,
+      validate: {
+        maxLength: 1000
+      }
     },
     recommend: {
       type: Sequelize.BOOLEAN,
@@ -68,6 +65,26 @@ const Reviews = sequelize.define('reviews', {
         const rawValue = this.getDataValue('recommend');
         return rawValue ? 1 : 0;
       }
+    },
+    reported: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
+    reviewer_name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    reviewer_email: {
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    response: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    helpfulness: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0
     }
 }, {
     timestamps: false,
@@ -80,10 +97,6 @@ const ReviewsPhotos = sequelize.define('reviews_photos', {
       allowNull: false,
       primaryKey: true
     },
-    url: {
-      type: Sequelize.STRING(280),
-      allowNull: false
-    },
     review_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
@@ -91,6 +104,10 @@ const ReviewsPhotos = sequelize.define('reviews_photos', {
         model: Reviews,
         key: 'id'
       }
+    },
+    url: {
+      type: Sequelize.STRING(280),
+      allowNull: false
     }
 }, {
     timestamps: false,
@@ -100,8 +117,8 @@ const ReviewsPhotos = sequelize.define('reviews_photos', {
 const Products = sequelize.define('products', {
   id: {
     type: Sequelize.INTEGER,
-    allowNull: false,
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   name: {
     type: Sequelize.STRING(280),
@@ -115,11 +132,11 @@ const Products = sequelize.define('products', {
     type: Sequelize.STRING(1000),
     allowNull: false
   },
-  default_price: {
+  category: {
     type: Sequelize.STRING(280),
     allowNull: false
   },
-  category: {
+  default_price: {
     type: Sequelize.STRING(280),
     allowNull: false
   }
@@ -131,15 +148,19 @@ const Products = sequelize.define('products', {
 const Characteristics = sequelize.define('characteristics', {
   id: {
     type: Sequelize.INTEGER,
-    allowNull: false,
-    primaryKey: true
-  },
-  name: {
-    type: Sequelize.STRING(280),
-    allowNull: false
+    primaryKey: true,
+    autoIncrement: true
   },
   product_id: {
     type: Sequelize.INTEGER,
+    allowNull: false,
+    references: {
+      model: "products",
+      key: "id"
+    }
+  },
+  name: {
+    type: Sequelize.STRING(280),
     allowNull: false
   }
 }, {
@@ -149,16 +170,24 @@ const Characteristics = sequelize.define('characteristics', {
 const CharacteristicReview = sequelize.define('characteristic_review', {
   id: {
     type: Sequelize.INTEGER,
-    allowNull: false,
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   characteristic_id: {
     type: Sequelize.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: "characteristics",
+      key: "id"
+    }
   },
   review_id: {
     type: Sequelize.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: "reviews",
+      key: "id"
+    }
   },
   value: {
     type: Sequelize.INTEGER,
@@ -179,7 +208,7 @@ Products.hasMany(Reviews, {
   foreignKey: 'product_id'
 });
 
-sequelize.sync({force: false});
+sequelize.sync();
 
 module.exports = {
   sequelize: sequelize,

@@ -15,6 +15,10 @@ router.get('/reviews/:product_id/list', (req, res) => {
 
 router.get('/reviews/:product_id/meta', (req, res) => {
     controller.getReviewMeta(req, res);
+});
+
+router.post('/reviews/:product_id', (req, res) => {
+    controller.postReview(req, res);
 })
 
 

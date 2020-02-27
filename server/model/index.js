@@ -10,7 +10,6 @@ const {
 // Should interact with Postgres and pass the data back to controller.
 module.exports = {
     fetchReviewList: (req) => {
-        // let url = req.url;
         let product_id = req.params.product_id;
         let page = req.query.page;
         let count = Number(req.query.count);
@@ -52,12 +51,10 @@ module.exports = {
             reply["results"] = results;
             return reply;
         });
-
     },
     fetchReviewMeta: (req) => {
-        // let url = req.url;
         let product_id = req.params.product_id;
-        // let ratingsQuery = `SELECT rating, COUNT(*) FROM reviews WHERE product_id = ${product_id} GROUP BY rating `
+
         let ratingsQuery = `SELECT rating, COUNT(*) FROM reviews WHERE id IN (SELECT id FROM reviews WHERE reviews.product_id = ${product_id}) GROUP BY rating `
         let ratingsPromise = sequelize.query(ratingsQuery)
             .then(([results]) => {
@@ -95,8 +92,30 @@ module.exports = {
                     };
                 });
                 return characteristics;
-            })
+            });
         
         return Promise.all([ratingsPromise, recommendedPromise, characteristicsPromise]);
+    },
+    addReview: (req, res) => {
+        let url = req.url;
+        let product_id = req.params.product_id;
+
+        Reviews.create({
+            rating: req.body.rating,
+            summary: req.body.summary,
+            body: req.body.body,
+            reviewer_name: req.body.name,
+            product_id: product_id,
+            reviewer_email: req.body.email,
+            recommend: req.body.recommend
+        })
+        .then((response) => {
+            console.log('testing Review Create:', response);
+        })
+        // console.log('testing url:', url);
+        // console.log('testing id:', product_id);
+        // console.log('testing body:', body);
+
+        res.send('Testing Model POST REVIEW');
     }
 }

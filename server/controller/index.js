@@ -27,5 +27,7 @@ module.exports = {
                 console.log('Error fetching Metadata:', error);
             })
     },
-    
+    postReview: (req, res) => {
+        model.addReview(req, res)
+    }
 }
