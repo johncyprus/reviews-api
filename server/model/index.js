@@ -2,18 +2,24 @@ const {
     sequelize,
     Reviews, 
     ReviewsPhotos, 
-    Products, 
-    Characteristics, 
-    CharacteristicReviews
+    CharacteristicReview
 } = require('../sequelize/sequelize');
 
 // Should interact with Postgres and pass the data back to controller.
 module.exports = {
     fetchReviewList: (req) => {
         let product_id = req.params.product_id;
-        let page = req.query.page;
-        let count = Number(req.query.count);
-        // let sort = req.query.sort; 
+        let page = req.query.page || 1;
+        let count = Number(req.query.count) || 5;
+        let sort = req.query.sort; 
+        let orderBy;
+        if (sort === 'newest') {
+            orderBy = [['id', 'DESC']];
+        } else if (sort === 'helpful') {
+            orderBy = [['helpfulness', 'DESC']];
+        } else if (sort === 'relevant') {
+            orderBy = [['id', 'DESC'], ['helpfulness', 'DESC']];
+        }
 
         let reply = {
             product: product_id,
@@ -23,8 +29,10 @@ module.exports = {
 
         return Reviews.findAll({
             where: {
-                product_id: product_id
+                product_id: product_id,
+                reported: false
             },
+            order: orderBy, 
             attributes: [
                 ['id', 'review_id'],
                 'rating',
@@ -36,9 +44,9 @@ module.exports = {
                 'product_id',
                 'response',
                 'recommend'
-            ], 
+            ],
             limit: count,
-            order: sequelize.col('id'),
+            offset: count * (page - 1),
             include: [
                 {
                     model: ReviewsPhotos,
@@ -74,10 +82,14 @@ module.exports = {
                 if (results.length === 0) {
                     return {0: 0, 1: 0};
                 }
-                let recommended = {
-                    0: Number(results[0].count),
-                    1: Number(results[1].count)
-                };
+                let recommended = { 0: 0, 1: 0};
+                results.forEach(item => {
+                    if (item.recommend === false) {
+                        recommended[0] = Number(item.count);
+                    } else {
+                        recommended[1] = Number(item.count);
+                    }
+                });
                 return recommended;
             });
         
@@ -96,11 +108,12 @@ module.exports = {
         
         return Promise.all([ratingsPromise, recommendedPromise, characteristicsPromise]);
     },
-    addReview: (req, res) => {
-        let url = req.url;
+    addReview: (req) => {
         let product_id = req.params.product_id;
+        let characteristics = req.body.characteristics;
+        let photos = req.body.photos;
 
-        Reviews.create({
+        return Reviews.create({
             rating: req.body.rating,
             summary: req.body.summary,
             body: req.body.body,
@@ -110,12 +123,34 @@ module.exports = {
             recommend: req.body.recommend
         })
         .then((response) => {
-            console.log('testing Review Create:', response);
+            let reviewInsertId = JSON.parse(JSON.stringify(response.id));
+            for (let charId in characteristics) {
+                CharacteristicReview.create({
+                    characteristic_id: Number(charId),
+                    review_id: reviewInsertId,
+                    value: characteristics[charId]
+                })
+                .catch(error => {console.log('ERROR POSTING CHARACTER REVIEW:', error)});
+            }
+            
+            if (photos.length !== 0 || photos !== undefined) {
+                photos.forEach(url => {
+                    ReviewsPhotos.create({
+                        review_id: reviewInsertId,
+                        url: url
+                    })
+                    .catch(error => {console.log('ERROR POSTING PHOTOS:', error)});
+                });
+            }
         })
-        // console.log('testing url:', url);
-        // console.log('testing id:', product_id);
-        // console.log('testing body:', body);
-
-        res.send('Testing Model POST REVIEW');
+        .catch(error => {console.log('ERROR POSTING REVIEW:', error)});
+    },
+    updateReviewHelpfulness: (req) => {
+        let review_id = req.params.review_id;
+        return Reviews.increment('helpfulness', {by: 1, where: {id: review_id}});
+    },
+    updateReviewReportedStatus: (req) => {
+        let review_id = req.params.review_id;
+        return Reviews.update({reported: true}, {where: {id: review_id}});
     }
 }
