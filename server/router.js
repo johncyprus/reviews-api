@@ -11,7 +11,22 @@ router.get('/reviews/:product_id/list', (req, res) => {
     // console.log('What is the Req Query?', req.query);
     // console.log('What is the other url?:', req.url);
     controller.getReviewList(req, res);
-})
+});
 
+router.get('/reviews/:product_id/meta', (req, res) => {
+    controller.getReviewMeta(req, res);
+});
+
+router.post('/reviews/:product_id', (req, res) => {
+    controller.postReview(req, res);
+});
+
+router.put('/reviews/helpful/:review_id', (req, res) => {
+    controller.markReviewAsHelpful(req, res);
+});
+
+router.put('/reviews/report/:review_id', (req, res) => {
+    controller.reportReview(req, res);
+});
 
 module.exports = router;
