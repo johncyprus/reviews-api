@@ -3,3 +3,4 @@ config.js
 CSV Files
 node_modules
 schema.sql
+DatabaseNotes.md
