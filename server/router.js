@@ -19,7 +19,14 @@ router.get('/reviews/:product_id/meta', (req, res) => {
 
 router.post('/reviews/:product_id', (req, res) => {
     controller.postReview(req, res);
-})
+});
 
+router.put('/reviews/helpful/:review_id', (req, res) => {
+    controller.markReviewAsHelpful(req, res);
+});
+
+router.put('/reviews/report/:review_id', (req, res) => {
+    controller.reportReview(req, res);
+});
 
 module.exports = router;
