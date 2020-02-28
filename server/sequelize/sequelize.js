@@ -10,9 +10,6 @@ sequelize.authenticate()
   .then(() => {
     console.log('DB connection has been established successfully.');
   })
-  .then(() => {
-    sequelize.sync();
-  })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
   });
@@ -48,14 +45,14 @@ const Reviews = sequelize.define('reviews', {
       type: Sequelize.STRING(60),
       allowNull: false,
       validate: {
-        maxLength: 60
+        len: [1, 60]
       }
     },
     body: {
       type: Sequelize.STRING(1000),
       allowNull: false,
       validate: {
-        maxLength: 1000
+        len: [1, 1000]
       }
     },
     recommend: {
@@ -94,8 +91,8 @@ const Reviews = sequelize.define('reviews', {
 const ReviewsPhotos = sequelize.define('reviews_photos', {
     id: {
       type: Sequelize.INTEGER,
-      allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
     review_id: {
       type: Sequelize.INTEGER,
@@ -201,14 +198,26 @@ const CharacteristicReview = sequelize.define('characteristic_review', {
 
 Reviews.hasMany(ReviewsPhotos, {
   foreignKey: 'review_id',
-  as: 'photos'
+  as: 'photos',
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
+});
+
+Reviews.hasMany(CharacteristicReview, {
+  foreignKey: 'review_id',
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
 });
 
 Products.hasMany(Reviews, {
   foreignKey: 'product_id'
 });
 
-sequelize.sync();
+sequelize.sync({alter: true})
+  .then(() => {})
+  .catch(error => {
+    console.log('ERROR SYNCING:', error)
+  })
 
 module.exports = {
   sequelize: sequelize,
