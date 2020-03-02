@@ -1,10 +1,17 @@
 const Sequelize = require('sequelize');
-const {database, username, password, host} = require('../../config.js');
 
-const sequelize = new Sequelize(database, username, password, {
-    host: host,
-    dialect: 'postgres'
-  });
+const {DB_DATABASE, DB_USERNAME, DB_HOST, DB_PASSWORD} = process.env;
+const {EC_DATABASE, EC_USERNAME, EC_HOST, EC_PASSWORD} = process.env;
+
+// const sequelize = new Sequelize(DB_DATABASE, DB_USERNAME, DB_PASSWORD, {
+//     host: DB_HOST,
+//     dialect: 'postgres'
+// });
+
+const sequelize = new Sequelize(EC_DATABASE, EC_USERNAME, EC_PASSWORD, {
+  host: EC_HOST,
+  dialect: 'postgres'
+});
 
 sequelize.authenticate()
   .then(() => {
@@ -213,7 +220,7 @@ Products.hasMany(Reviews, {
   foreignKey: 'product_id'
 });
 
-sequelize.sync({alter: true})
+sequelize.sync()
   .then(() => {})
   .catch(error => {
     console.log('ERROR SYNCING:', error)

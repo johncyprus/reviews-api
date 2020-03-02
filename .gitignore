@@ -1,6 +1,5 @@
 package-lock.json
-config.js
+.env
 CSV Files
 node_modules
-schema.sql
 DatabaseNotes.md
