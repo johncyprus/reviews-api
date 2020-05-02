@@ -1,22 +1,24 @@
-const dotenv = require('dotenv').config({path: __dirname + '/.env'});
-const express = require('express');
+const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
+const express = require("express");
 const app = express();
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const router = require('./router');
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
+const router = require("./router");
 
-// test to see if process.env is  reading .env file correctly
-if (dotenv.error) {throw dotenv.error};
+if (dotenv.error) {
+  throw dotenv.error;
+}
 
-// provide data for requests and responses
-app.use(morgan('dev'));
-// parse application/x-www-form-urlencoded
+app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
-// parse application/json
 app.use(bodyParser.json());
-// route requests to router.js
-app.use('/', router);
 
+// Testing route for loader.io
+app.get("/loaderio-74e1a52a61f54b9c5d4f5146b36b98d5", (req, res) => {
+  res.sendStatus(200);
+});
+
+app.use("/", router);
 
 const port = 3000;
-app.listen(port, () => console.log(`App listening on port ${port}!`))
+app.listen(port, () => console.log(`App listening on port ${port}!`));
