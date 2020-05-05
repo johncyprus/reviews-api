@@ -14,7 +14,7 @@ RUN npm install --g nodemon
 RUN npm install
 
 # Inform Docker that the container is listening on the specified port at runtime.
-EXPOSE 3001
+EXPOSE 3000
 
 # Copy the rest of your app's source code from host to image filesystem
 COPY . .
