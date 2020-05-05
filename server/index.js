@@ -14,8 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Testing route for loader.io
-app.get("/loaderio-74e1a52a61f54b9c5d4f5146b36b98d5", (req, res) => {
-  res.sendStatus(200);
+app.get("/loaderio-113d7d969e742b7e561408700d75471f", (req, res) => {
+  res.send("loaderio-113d7d969e742b7e561408700d75471f");
 });
 
 app.use("/", router);

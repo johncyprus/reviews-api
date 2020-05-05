@@ -1,18 +1,30 @@
 const Sequelize = require("sequelize");
 
-const { DB_DATABASE, DB_USERNAME, DB_HOST, DB_PASSWORD } = process.env;
-const sequelize = new Sequelize(DB_DATABASE, DB_USERNAME, DB_PASSWORD, {
-  host: DB_HOST,
+// Local Machine Configuration
+// const { DB_DATABASE, DB_USERNAME, DB_HOST, DB_PASSWORD } = process.env;
+// const sequelize = new Sequelize(DB_DATABASE, DB_USERNAME, DB_PASSWORD, {
+//   host: DB_HOST,
+//   dialect: "postgres",
+//   logging: false,
+//   pool: {
+//     max: 20,
+//     min: 0,
+//     idle: 10000,
+//   },
+// });
+
+// AWS EC2 Configuration
+const { EC_DATABASE, EC_USERNAME, EC_HOST, EC_PASSWORD } = process.env;
+const sequelize = new Sequelize(EC_DATABASE, EC_USERNAME, EC_PASSWORD, {
+  host: EC_HOST,
   dialect: "postgres",
   logging: false,
+  pool: {
+    max: 10,
+    min: 0,
+    idle: 10000,
+  },
 });
-
-// const {EC_DATABASE, EC_USERNAME, EC_HOST, EC_PASSWORD} = process.env;
-// const sequelize = new Sequelize(EC_DATABASE, EC_USERNAME, EC_PASSWORD, {
-//   host: EC_HOST,
-//   dialect: 'postgres',
-//   logging: false
-// });
 
 sequelize
   .authenticate()
