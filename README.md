@@ -39,3 +39,11 @@ With NGINX load balancing and a redis cache used to search across a thousand pro
 
 **Review Metadata Example:**
 ![Screen Shot 2020-05-05 at 6 54 40 PM](https://user-images.githubusercontent.com/41877388/81136530-d51b7900-8f29-11ea-8169-4579a012ba78.png)
+
+## Developers
+
+**Ratings & Reviews API** by John Lee
+
+**Products API** by Zaid Mansuri
+
+**Questions & Answers API** by Patrick Pagba
